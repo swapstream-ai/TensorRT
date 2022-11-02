@@ -51,6 +51,7 @@ using namespace nvinfer1::plugin;
 #include "regionPlugin.h"
 #include "reorgPlugin.h"
 #include "resizeNearestPlugin.h"
+#include "retinaFaceBatchedNMSPlugin.h"
 #include "specialSlicePlugin.h"
 #include "split.h"
 #include "scatterPlugin.h"
@@ -191,6 +192,8 @@ extern "C"
         initializePlugin<nvinfer1::plugin::RegionPluginCreator>(logger, libNamespace);
         initializePlugin<nvinfer1::plugin::ReorgPluginCreator>(logger, libNamespace);
         initializePlugin<nvinfer1::plugin::ResizeNearestPluginCreator>(logger, libNamespace);
+        initializePlugin<nvinfer1::plugin::RetinaFaceBatchedNMSPluginCreator>(logger, libNamespace);
+        initializePlugin<nvinfer1::plugin::RetinaFaceBatchedNMSDynamicPluginCreator>(logger, libNamespace);
         initializePlugin<nvinfer1::plugin::RPROIPluginCreator>(logger, libNamespace);
         initializePlugin<nvinfer1::plugin::ScatterNDPluginCreator>(logger, libNamespace);
         initializePlugin<nvinfer1::plugin::SpecialSlicePluginCreator>(logger, libNamespace);

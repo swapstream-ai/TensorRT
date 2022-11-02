@@ -54,6 +54,7 @@ set(PLUGIN_LISTS
     regionPlugin
     reorgPlugin
     resizeNearestPlugin
+    retinaFaceBatchedNMSPlugin
     scatterPlugin
     specialSlicePlugin
     splitPlugin

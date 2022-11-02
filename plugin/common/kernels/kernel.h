@@ -34,6 +34,12 @@ typedef enum
     NC4HW = 1
 } DLayout_t;
 
+pluginStatus_t retinafaceNmsInference(cudaStream_t stream, const int N, const int perBatchBoxesSize, const int perBatchScoresSize,
+    const bool shareLocation, const int backgroundLabelId, const int numPredsPerClass, const int numClasses,
+    const int topK, const int keepTopK, const float scoreThreshold, const float iouThreshold, const DataType DT_BBOX,
+    const void* locData, const DataType DT_SCORE, const void* confData, const void* ldmkData, void* keepCount, void* nmsedBoxes,
+    void* nmsedScores, void* nmsedLdmks, void* workspace, bool isNormalized, bool confSigmoid, bool clipBoxes, int scoreBits);
+
 pluginStatus_t allClassNMS(cudaStream_t stream, int num, int num_classes, int num_preds_per_class, int top_k,
     float nms_threshold, bool share_location, bool isNormalized, DataType DT_SCORE, DataType DT_BBOX, void* bbox_data,
     void* beforeNMS_scores, void* beforeNMS_index_array, void* afterNMS_scores, void* afterNMS_index_array, bool flipXY,

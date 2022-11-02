@@ -277,7 +277,7 @@ int RetinaFaceBatchedNMSPlugin::enqueue(
         void* nmsedScores = outputs[2];
         void* nmsedLandmarks = outputs[3];
 
-        pluginStatus_t status = nmsInferenceV2(stream, batchSize, boxesSize, scoresSize, param.shareLocation,
+        pluginStatus_t status = retinafaceNmsInference(stream, batchSize, boxesSize, scoresSize, param.shareLocation,
             param.backgroundLabelId, numPriors, param.numClasses, param.topK, param.keepTopK, param.scoreThreshold,
             param.iouThreshold, mPrecision, locData, mPrecision, confData, ldmkData, keepCount, nmsedBoxes, nmsedScores, nmsedLandmarks,
             workspace, param.isNormalized, false, mClipBoxes, mScoreBits);
@@ -309,7 +309,7 @@ int RetinaFaceBatchedNMSDynamicPlugin::enqueue(const PluginTensorDesc* inputDesc
         void* nmsedScores = outputs[2];
         void* nmsedLandmarks = outputs[3];
 
-        pluginStatus_t status = nmsInferenceV2(stream, inputDesc[0].dims.d[0], boxesSize, scoresSize, param.shareLocation,
+        pluginStatus_t status = retinafaceNmsInference(stream, inputDesc[0].dims.d[0], boxesSize, scoresSize, param.shareLocation,
             param.backgroundLabelId, numPriors, param.numClasses, param.topK, param.keepTopK, param.scoreThreshold,
             param.iouThreshold, mPrecision, locData, mPrecision, confData, ldmkData, keepCount, nmsedBoxes, nmsedScores, nmsedLandmarks,
             workspace, param.isNormalized, false, mClipBoxes, mScoreBits);
