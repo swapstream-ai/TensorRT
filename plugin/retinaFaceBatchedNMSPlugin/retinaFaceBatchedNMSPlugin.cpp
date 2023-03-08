@@ -175,19 +175,11 @@ DimsExprs RetinaFaceBatchedNMSDynamicPlugin::getOutputDimensions(
         ASSERT(nbInputs == 3);
         ASSERT(outputIndex >= 0 && outputIndex < this->getNbOutputs());
 
-        // Shape of boxes input should be
-        // Constant shape: [batch_size, num_boxes, num_classes, 4] or [batch_size, num_boxes, 1, 4]
-        //           shareLocation ==              0               or          1
-        // or
-        // Dynamic shape: some dimension values may be -1
         ASSERT(inputs[0].nbDims == 4);
-
-        // Shape of scores input should be
-        // Constant shape: [batch_size, num_boxes, num_classes] or [batch_size, num_boxes, num_classes, 1]
-        // or
-        // Dynamic shape: some dimension values may be -1
         ASSERT(inputs[1].nbDims == 3 || inputs[1].nbDims == 4);
+        ASSERT(inputs[2].nbDims == 4);
 
+        // set boxesSize and scoresSize
         if (inputs[0].d[0]->isConstant() && inputs[0].d[1]->isConstant() && inputs[0].d[2]->isConstant()
             && inputs[0].d[3]->isConstant())
         {
@@ -204,37 +196,41 @@ DimsExprs RetinaFaceBatchedNMSDynamicPlugin::getOutputDimensions(
                              ->getConstantValue();
         }
 
+        // cal out_dim
         DimsExprs out_dim;
-        // num_detections
-        if (outputIndex == 0)
+        switch (outputIndex)
+        {
+        case 0: // nms_num_detections
         {
             out_dim.nbDims = 2;
             out_dim.d[0] = inputs[0].d[0];
             out_dim.d[1] = exprBuilder.constant(1);
+            break;
         }
-        // nmsed_boxes
-        else if (outputIndex == 1)
+        case 1: // nms_boxes
         {
             out_dim.nbDims = 3;
             out_dim.d[0] = inputs[0].d[0];
             out_dim.d[1] = exprBuilder.constant(param.keepTopK);
             out_dim.d[2] = exprBuilder.constant(4);
+            break;
         }
-        // nmsed_scores
-        else if (outputIndex == 2)
+        case 2: // nms_scores
         {
             out_dim.nbDims = 2;
             out_dim.d[0] = inputs[0].d[0];
             out_dim.d[1] = exprBuilder.constant(param.keepTopK);
+            break;
         }
-        // nmsed_classes
-        else
+        case 3: // nms_ldmks
         {
-            out_dim.nbDims = 2;
+            out_dim.nbDims = 3;
             out_dim.d[0] = inputs[0].d[0];
             out_dim.d[1] = exprBuilder.constant(param.keepTopK);
+            out_dim.d[2] = exprBuilder.constant(10);
+            break;
         }
-
+        }
         return out_dim;
     }
     catch (const std::exception& e)
@@ -431,28 +427,35 @@ bool RetinaFaceBatchedNMSPlugin::supportsFormat(DataType type, PluginFormat form
 bool RetinaFaceBatchedNMSDynamicPlugin::supportsFormatCombination(
     int pos, const PluginTensorDesc* inOut, int nbInputs, int nbOutputs) noexcept
 {
-    ASSERT(nbInputs <= 2 && nbInputs >= 0);
+    ASSERT(nbInputs <= 3 && nbInputs >= 0);
     ASSERT(nbOutputs <= 4 && nbOutputs >= 0);
-    ASSERT(pos < 6 && pos >= 0);
+    ASSERT(pos < 7 && pos >= 0);
     const auto* in = inOut;
     const auto* out = inOut + nbInputs;
-    const bool consistentFloatPrecision = in[0].type == in[pos].type;
+    const bool consistentFloatPrecision = inOut[0].type == inOut[pos].type;
     switch (pos)
     {
+    // inputs
     case 0:
         return (in[0].type == DataType::kHALF || in[0].type == DataType::kFLOAT)
             && in[0].format == PluginFormat::kLINEAR && consistentFloatPrecision;
     case 1:
         return (in[1].type == DataType::kHALF || in[1].type == DataType::kFLOAT)
             && in[1].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 2: return out[0].type == DataType::kINT32 && out[0].format == PluginFormat::kLINEAR;
+    case 2:
+        return (in[2].type == DataType::kHALF || in[2].type == DataType::kFLOAT)
+            && in[2].format == PluginFormat::kLINEAR && consistentFloatPrecision;
+
+    // outputs
     case 3:
+        return out[0].type == DataType::kINT32 && out[0].format == PluginFormat::kLINEAR;
+    case 4:
         return (out[1].type == DataType::kHALF || out[1].type == DataType::kFLOAT)
             && out[1].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 4:
+    case 5:
         return (out[2].type == DataType::kHALF || out[2].type == DataType::kFLOAT)
             && out[2].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 5:
+    case 6:
         return (out[3].type == DataType::kHALF || out[3].type == DataType::kFLOAT)
             && out[3].format == PluginFormat::kLINEAR && consistentFloatPrecision;
     }
